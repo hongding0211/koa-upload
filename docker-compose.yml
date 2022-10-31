@@ -1,0 +1,13 @@
+version: "2"
+services:
+  node:
+    image: "node:16"
+    working_dir: /home/node/app
+    volumes:
+      - ./:/home/node/app
+    ports:
+      - "8888:3500"
+    restart: always
+    command: "node /home/node/app/server.js"
+    volumes:
+      - "./files:/home/node/app/files"
