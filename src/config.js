@@ -1,5 +1,5 @@
-const BASE_URL = 'https://hong97.ltd/upload/files'
-const SECRET = 'linmeihuashiyigemeimao'
+const BASE_URL = 'BASE_URL'
+const SECRET = 'SECRET'
 
 module.exports = {
   BASE_URL,
