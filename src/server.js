@@ -43,6 +43,7 @@ app.use(
       uploadDir: path.join(__dirname, '../files'),
       keepExtensions: true,
     },
+    formLimit: '10mb',
   })
 )
 
