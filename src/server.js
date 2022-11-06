@@ -10,14 +10,6 @@ const app = new Koa()
 const router = new Router()
 
 router.post('/', (ctx) => {
-  const { file } = ctx.request.files
-  const basename = path.basename(file.filepath)
-  ctx.body = { url: `${BASE_URL}/${basename}` }
-})
-
-app.use(koaStatic('.'))
-
-app.use(async (ctx, next) => {
   const { token } = ctx.query
   if (token == null) {
     ctx.throw(401, 'Token is required')
@@ -33,8 +25,12 @@ app.use(async (ctx, next) => {
     ctx.throw(403, 'Invalid token')
     return
   }
-  await next()
+  const { file } = ctx.request.files
+  const basename = path.basename(file.filepath)
+  ctx.body = { url: `${BASE_URL}/${basename}` }
 })
+
+app.use(koaStatic('.'))
 
 app.use(
   koaBody({
