@@ -29,7 +29,7 @@ app.use(async (ctx, next) => {
   const t2 = shajs('sha256')
     .update(`${Math.floor(Date.now() / 600000 - 1)}${SECRET}`)
     .digest('hex')
-  if (token !== t1 || token !== t2) {
+  if (token !== t1 && token !== t2) {
     ctx.throw(403, 'Invalid token')
     return
   }
