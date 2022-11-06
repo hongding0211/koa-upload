@@ -4,6 +4,7 @@ const koaStatic = require('koa-static')
 const path = require('path')
 const shajs = require('sha.js')
 const { koaBody } = require('koa-body')
+const cors = require('koa-cors')
 const { BASE_URL, SECRET } = require('./config')
 
 const app = new Koa()
@@ -31,6 +32,8 @@ router.post('/', (ctx) => {
 })
 
 app.use(koaStatic('.'))
+
+app.use(cors())
 
 app.use(
   koaBody({
