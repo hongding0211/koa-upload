@@ -38,9 +38,9 @@ router.post('/', (ctx) => {
   }
 })
 
-app.use((ctx) => {
+app.use((ctx, next) => {
   if (ctx.request.method !== 'POST') {
-    return
+    next()
   }
   const { token } = ctx.query
   if (token == null) {
