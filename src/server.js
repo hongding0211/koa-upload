@@ -39,7 +39,7 @@ router.post('/', (ctx) => {
   const data = fs.readFileSync(filepath)
   const img = images(data)
 
-  if (compress === 'true') {
+  if (compress === 'true' || !Number.isNaN(+fixedWidth)) {
     const { width } = img.size()
     for (let i = 1; i <= 4; i *= 2) {
       const newPath = filepath.replace(/(.+)\.(\w+$)/, `$1_${100 / i}.jpg`)
@@ -51,18 +51,19 @@ router.post('/', (ctx) => {
         `$1_${100 / i}.jpg`
       )}`
     }
-  }
-  if (!Number.isNaN(+fixedWidth)) {
-    const w = +fixedWidth
-    const newPath = filepath.replace(/(.+)\.(\w+$)/, `$1_fixedWidth_${w}.jpg`)
-    img.resize(w).save(newPath, {
-      quality: 75,
-    })
-    console.log(newPath)
-    compressFileNames.fixedWidth = `${BASE_URL}/${basename.replace(
-      /(.+)\.(\w+$)/,
-      `$1_fixedWidth_${w}.jpg`
-    )}`
+
+    if (!Number.isNaN(+fixedWidth)) {
+      const w = +fixedWidth
+      const newPath = filepath.replace(/(.+)\.(\w+$)/, `$1_fixedWidth_${w}.jpg`)
+      img.resize(w).save(newPath, {
+        quality: 75,
+      })
+      console.log(newPath)
+      compressFileNames.fixedWidth = `${BASE_URL}/${basename.replace(
+        /(.+)\.(\w+$)/,
+        `$1_fixedWidth_${w}.jpg`
+      )}`
+    }
   }
 
   ctx.body = {
