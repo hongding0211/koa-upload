@@ -13,7 +13,7 @@ const app = new Koa()
 const router = new Router()
 
 router.post('/', (ctx) => {
-  const { token, compress } = ctx.query
+  const { token, compress, fixedWidth } = ctx.query
 
   if (token == null) {
     ctx.throw(401, 'Token is required')
@@ -36,9 +36,10 @@ router.post('/', (ctx) => {
 
   const compressFileNames = {}
 
+  const data = fs.readFileSync(filepath)
+  const img = images(data)
+
   if (compress === 'true') {
-    const data = fs.readFileSync(filepath)
-    const img = images(data)
     const { width } = img.size()
     for (let i = 1; i <= 4; i *= 2) {
       const newPath = filepath.replace(/(.+)\.(\w+$)/, `$1_${100 / i}.jpg`)
@@ -51,10 +52,25 @@ router.post('/', (ctx) => {
       )}`
     }
   }
+  if (!Number.isNaN(+fixedWidth)) {
+    const w = +fixedWidth
+    const newPath = filepath.replace(/(.+)\.(\w+$)/, `$1_fixedWidth_${w}.jpg`)
+    img.resize(w).save(newPath, {
+      quality: 75,
+    })
+    console.log(newPath)
+    compressFileNames.fixedWidth = `${BASE_URL}/${basename.replace(
+      /(.+)\.(\w+$)/,
+      `$1_fixedWidth_${w}.jpg`
+    )}`
+  }
 
   ctx.body = {
     url: `${BASE_URL}/${basename}`,
-    compress: compress === 'true' ? compressFileNames : undefined,
+    compress:
+      compress === 'true' || !Number.isNaN(+fixedWidth)
+        ? compressFileNames
+        : undefined,
   }
 })
 
