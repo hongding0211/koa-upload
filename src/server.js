@@ -13,7 +13,23 @@ const app = new Koa()
 const router = new Router()
 
 router.post('/', (ctx) => {
-  const { compress } = ctx.query
+  const { token, compress } = ctx.query
+
+  if (token == null) {
+    ctx.throw(401, 'Token is required')
+    return
+  }
+  const t1 = shajs('sha256')
+    .update(`${Math.floor(Date.now() / 600000)}${SECRET}`)
+    .digest('hex')
+  const t2 = shajs('sha256')
+    .update(`${Math.floor(Date.now() / 600000 - 1)}${SECRET}`)
+    .digest('hex')
+  if (token !== t1 && token !== t2) {
+    ctx.throw(403, 'Invalid token')
+    return
+  }
+
   const { file } = ctx.request.files
   const { filepath } = file
   const basename = path.basename(filepath)
@@ -35,27 +51,6 @@ router.post('/', (ctx) => {
   ctx.body = {
     url: `${BASE_URL}/${basename}`,
     compress: compress === 'true' ? compressFileNames : undefined,
-  }
-})
-
-app.use((ctx, next) => {
-  if (ctx.request.method !== 'POST') {
-    next()
-  }
-  const { token } = ctx.query
-  if (token == null) {
-    ctx.throw(401, 'Token is required')
-    return
-  }
-  const t1 = shajs('sha256')
-    .update(`${Math.floor(Date.now() / 600000)}${SECRET}`)
-    .digest('hex')
-  const t2 = shajs('sha256')
-    .update(`${Math.floor(Date.now() / 600000 - 1)}${SECRET}`)
-    .digest('hex')
-  if (token !== t1 && token !== t2) {
-    ctx.throw(403, 'Invalid token')
-    return
   }
 })
 
