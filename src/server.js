@@ -33,6 +33,9 @@ router.post('/', (ctx) => {
 })
 
 app.use((ctx) => {
+  if (ctx.request.method !== 'POST') {
+    return
+  }
   const { token } = ctx.query
   if (token == null) {
     ctx.throw(401, 'Token is required')
