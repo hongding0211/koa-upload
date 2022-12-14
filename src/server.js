@@ -50,6 +50,9 @@ router.post('/', (ctx) => {
         /(.+)\.(\w+$)/,
         `$1_${100 / i}.jpg`
       )}`
+      if (!Number.isNaN(+fixedWidth)) {
+        break
+      }
     }
 
     if (!Number.isNaN(+fixedWidth)) {
@@ -64,6 +67,8 @@ router.post('/', (ctx) => {
         `$1_fixedWidth_${w}.jpg`
       )}`
     }
+
+    fs.unlink(filepath, () => {})
   }
 
   ctx.body = {
