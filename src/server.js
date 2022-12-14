@@ -6,11 +6,33 @@ const shajs = require('sha.js')
 const { koaBody } = require('koa-body')
 const cors = require('koa-cors')
 const { BASE_URL, SECRET } = require('./config')
+const images = require('images')
+const fs = require('fs')
 
 const app = new Koa()
 const router = new Router()
 
 router.post('/', (ctx) => {
+  const { compress } = ctx.query
+  const { file } = ctx.request.files
+  const { filepath } = file
+  const basename = path.basename(filepath)
+  const compressFileNames = {}
+  if (compress && compress === 'true') {
+    for (let i = 1; i <= 4; i *= 2) {
+      compressFileNames[100 / i] = basename.replace(
+        /(.+)\.(\w+$)/,
+        `$1_${100 / i}.jpg`
+      )
+    }
+  }
+  ctx.body = {
+    url: `${BASE_URL}/${basename}`,
+    compress: compress === 'true' ? compressFileNames : undefined,
+  }
+})
+
+app.use((ctx) => {
   const { token } = ctx.query
   if (token == null) {
     ctx.throw(401, 'Token is required')
@@ -26,9 +48,6 @@ router.post('/', (ctx) => {
     ctx.throw(403, 'Invalid token')
     return
   }
-  const { file } = ctx.request.files
-  const basename = path.basename(file.filepath)
-  ctx.body = { url: `${BASE_URL}/${basename}` }
 })
 
 app.use(koaStatic('.'))
@@ -46,6 +65,27 @@ app.use(
     formLimit: 10 * 1024 * 1024,
   })
 )
+
+app.use(async (ctx, next) => {
+  const { compress } = ctx.query
+  if (compress && compress !== 'true') {
+    return
+  }
+  const { file } = ctx.request.files
+  const { filepath } = file
+
+  const data = fs.readFileSync(filepath)
+  const img = images(data)
+  const { width } = img.size()
+  for (let i = 1; i <= 4; i *= 2) {
+    const newPath = filepath.replace(/(.+)\.(\w+$)/, `$1_${100 / i}.jpg`)
+    img.resize(width / i).save(newPath, {
+      quality: 75,
+    })
+  }
+
+  await next()
+})
 
 app.use(router.routes())
 
