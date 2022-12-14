@@ -45,7 +45,10 @@ router.post('/', (ctx) => {
       img.resize(width / i).save(newPath, {
         quality: 75,
       })
-      compressFileNames[100 / i] = newPath
+      compressFileNames[100 / i] = `${BASE_URL}/${basename.replace(
+        /(.+)\.(\w+$)/,
+        `$1_${100 / i}.jpg`
+      )}`
     }
   }
 
